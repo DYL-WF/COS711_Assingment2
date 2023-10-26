@@ -1,4 +1,4 @@
-# run the bash init script
+# run the bash `init.sh` script if you're on linux, else follow steps bellow.
 ./init.sh
 
 #======== INITIALIZATION =========#
