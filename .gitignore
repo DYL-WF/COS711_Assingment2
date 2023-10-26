@@ -1,2 +1,11 @@
+# Images 
 **/*.JPG
+**/*.jpg
+**/*.png
+**/*.PNG
+
+# Python
 env
+
+# VS code
+.vscode
