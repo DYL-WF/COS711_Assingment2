@@ -9,3 +9,11 @@ env
 
 # VS code
 .vscode
+
+# Compressions
+.tar.xa
+*.zip
+*.tar*
+
+# Logging
+*.log
