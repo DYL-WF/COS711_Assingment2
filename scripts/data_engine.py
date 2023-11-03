@@ -35,16 +35,17 @@ class data_engine():
     
     def get_image_data(self,file_name):
         img = torchvision.io.read_image("content/"+self.mode+"/"+file_name)
-        # print(img[0])
+        print(img)
 
+        plt.imshow(img.permute(1, 2, 0))
+        plt.show()
+        transform = torchvision.transforms.Resize((4,3))
         img_normalized = img.clone()
+        img_normalized = transform(img_normalized)
         img_normalized = img_normalized/255
-
         print( img_normalized)
 
         plt.imshow(img_normalized.permute(1, 2, 0))
-        plt.show()
-        plt.imshow(img.permute(1, 2, 0))
         plt.show()
         
         return img_normalized
