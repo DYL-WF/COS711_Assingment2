@@ -39,7 +39,7 @@ class data_engine():
 
         # plt.imshow(img.permute(1, 2, 0))
         # plt.show()
-        transform = torchvision.transforms.Resize((640,480))
+        transform = torchvision.transforms.Resize((640,480), antialias=True)
         img_normalized = img.clone()
         img_normalized = transform(img_normalized)
         img_normalized = img_normalized/255
