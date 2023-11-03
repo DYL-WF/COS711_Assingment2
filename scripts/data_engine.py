@@ -56,12 +56,13 @@ class data_engine():
         if((index < self.data.size) & (index >= 0)):
             img_data = self.get_image_data(self.data.iloc[index]["filename"])       
             meta_data = self.data.iloc[index].to_list()[1:]
+            target = self.data.iloc[index].to_list()[0]
 
             logging.debug("Image data: ")
             logging.debug(img_data)
             logging.debug("Meta data: ")
             logging.debug(meta_data)
-            return img_data, meta_data
+            return img_data, meta_data, target
         else:
             logging.error("Index out of bounds")
             raise Exception("Index out of bounds")
