@@ -35,25 +35,25 @@ class data_engine():
     
     def get_image_data(self,file_name):
         img = torchvision.io.read_image("content/"+self.mode+"/"+file_name)
-        print(img)
+        # print(img)
 
-        plt.imshow(img.permute(1, 2, 0))
-        plt.show()
-        transform = torchvision.transforms.Resize((4,3))
+        # plt.imshow(img.permute(1, 2, 0))
+        # plt.show()
+        transform = torchvision.transforms.Resize((640,480))
         img_normalized = img.clone()
         img_normalized = transform(img_normalized)
         img_normalized = img_normalized/255
-        print( img_normalized)
+        # print( img_normalized)
 
-        plt.imshow(img_normalized.permute(1, 2, 0))
-        plt.show()
+        # plt.imshow(img_normalized.permute(1, 2, 0))
+        # plt.show()
         
         return img_normalized
 
     def get_input(self, index: int):
 
         logging.info("# retrieving data for row: "+str(index))
-        if((index < self.data.count().count()) & (index >= 0)):
+        if((index < self.data.size) & (index >= 0)):
             img_data = self.get_image_data(self.data.iloc[index]["filename"])       
             meta_data = self.data.iloc[index].to_list()[1:]
 
