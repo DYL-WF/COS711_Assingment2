@@ -4,9 +4,12 @@ import numpy as np
 
 import random
 import logging
-
+from torchvision import transforms
 import torch
 import torchvision
+
+import matplotlib.pyplot as plt
+
 
 np.set_printoptions(precision=3, suppress=True)
 logging.basicConfig( filename='./logs/debug.log', level=logging.DEBUG)
@@ -32,7 +35,19 @@ class data_engine():
     
     def get_image_data(self,file_name):
         img = torchvision.io.read_image("content/"+self.mode+"/"+file_name)
-        return img
+        # print(img[0])
+
+        img_normalized = img.clone()
+        img_normalized = img_normalized/255
+
+        print( img_normalized)
+
+        plt.imshow(img_normalized.permute(1, 2, 0))
+        plt.show()
+        plt.imshow(img.permute(1, 2, 0))
+        plt.show()
+        
+        return img_normalized
 
     def get_input(self, index: int):
 
