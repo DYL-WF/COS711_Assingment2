@@ -58,14 +58,14 @@ class data_engine():
             meta_data = self.data.iloc[index].to_list()[2:]
             target = self.data.iloc[index].to_list()[1]
 
-            logging.debug("Image data: ")
-            logging.debug(img_data)
-            logging.debug("Meta data: ")
-            logging.debug(meta_data)
+            # logging.debug("Image data: ")
+            # logging.debug(img_data)
+            # logging.debug("Meta data: ")
+            # logging.debug(meta_data)
 
-            logging.debug("Target: "+ target)
+            # logging.debug("Target: "+ str(target))
 
-            return img_data, meta_data, target
+            return img_data, torch.Tensor(np.array(meta_data)), target 
         else:
             logging.error("Index out of bounds")
             raise Exception("Index out of bounds")
