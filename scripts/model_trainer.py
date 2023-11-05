@@ -1,12 +1,10 @@
+import time
 import matplotlib.pyplot as plt # for plotting
 import numpy as np # for transformation
-
+from torch.optim.lr_scheduler import LambdaLR
 import torch # PyTorch package
-import torchvision # load datasets
-import torchvision.transforms as transforms # transform data
-import torch.nn as nn # basic building block for neural neteorks
 import torch.nn.functional as F # import convolution functions like Relu
-import torch.optim as optim # optimzer
+import torch.optim.lr_scheduler  as lr_scheduler
 
 import data_engine 
 import logging
@@ -14,39 +12,48 @@ logging.basicConfig(format='%(message)s', filename='./logs/debug.log', level=log
 import model as CNNModel
 
 class Trainer():
-    def __init__(self, learningRate=0.001):
+    def __init__(self,proc_mode="cuda"):
         self.model = CNNModel.CNN_Net()
-        self.lossFunction = torch.nn.MSELoss()
-        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=learningRate)   
 
+        self.proc_mode = proc_mode
+        device = torch.device(proc_mode)
+        self.model = self.model.to(device)
+
+        self.lossFunction = torch.nn.MSELoss()  
+        self.optimizer = torch.optim.SGD(self.model.parameters(), lr=0.01, momentum=0.9)
+        self.scheduler = lr_scheduler.ExponentialLR(self.optimizer, gamma=0.9)
         self.data_engine = data_engine.data_engine("meta/Train.csv")
         self.data_engine.one_hot_encode()
+        logging.info(self.model)
 
 
 
     def Train(self, numEpochs=5, trainingSplit=0.7):
         logging.info("#==================+-------------------------- TRAINING MODEL --------------------------------+==================#")
-
+        tic = time.perf_counter()
         lossesTotal = []
         lossesEpoch = []
         accuracyEpoch = []
         numCases = self.data_engine.get_count()
-        # numCases = 100
 
         trainingCount = round( numCases*trainingSplit )
         validationCount = round( numCases*(1-trainingSplit) )
         for epoch in range(numEpochs):
             epochAverageLoss = 0
             correct = 0
-
+            epochtic = time.perf_counter()
             # Training
             for i in range(trainingCount):
                 logging.info("")
 
-                img_data, meta_data, target = self.data_engine.get_input(i)
+                img_data, meta_data, target = self.data_engine.get_input(i,self.proc_mode)
 
                 x = self.model.forward(img_data,meta_data)
-                y = torch.Tensor([[target]])
+
+                if(self.proc_mode=="cuda"):
+                    y = torch.Tensor([[target]]).cuda()
+                else: 
+                    y = torch.Tensor([[target]])
 
                 loss = torch.sqrt(self.lossFunction(x,y))
 
@@ -65,7 +72,7 @@ class Trainer():
             # Validation
             for i in range(trainingCount,numCases):
 
-                img_data, meta_data, target = self.data_engine.get_input(i)
+                img_data, meta_data, target = self.data_engine.get_input(i, self.proc_mode)
 
                 x = round(100 * self.model.forward(img_data,meta_data).item() )
                 y = round(100 * torch.Tensor([[target]]).item() )
@@ -73,11 +80,15 @@ class Trainer():
                 if(x==y):
                     correct+=1
 
-                logging.info(f"Epoch: {epoch} Validation Case: {i+1}\n   Target: {y}, Prediction: {x} \n")
+                logging.info(f"Epoch: {epoch+1} Validation Case: {i+1}\n   Target: {y}, Prediction: {x} \n")
 
             accuracy = 100 * correct / validationCount 
             accuracyEpoch.append(accuracy)
-            logging.info(f"## Epoch: {epoch} \n   Accuracy: {accuracy}, Average Loss: {epochAverageLoss} \n")
+            self.scheduler.step()
+
+            epochtoc = time.perf_counter()
+            epoch_delta = epochtoc - epochtic
+            logging.info(f"## Epoch: {epoch+1} \n   Time Taken: {epoch_delta:0.4f}, Accuracy: {accuracy}, Average Loss: {epochAverageLoss/trainingCount} \n")
 
             
 
@@ -85,19 +96,21 @@ class Trainer():
         plt.plot(lossesEpoch)
         plt.xlabel("no. of epochs")
         plt.ylabel("Average loss per epoch")
-        plt.savefig('average_loss_per_Epoch', format="png", dpi=1200)
+        plt.savefig('average_loss_per_Epoch.png')
 
         plt.clf()
         plt.bar(range(trainingCount*numEpochs),lossesTotal, color ='maroon',width=1)
         plt.xlabel("no. of iterations")
         plt.ylabel("Loss per training case")
-        plt.savefig('training_loss', format="png", dpi=1200)
+        plt.savefig('training_loss.png')
 
         plt.clf()
         plt.plot(accuracyEpoch)
         plt.xlabel("no. of epochs")
         plt.ylabel("Accuracy per epoch")
-        plt.savefig('accuracy_per_Epoch', format="png", dpi=1200)
+        plt.savefig('accuracy_per_Epoch.png')
 
+        toc = time.perf_counter()
+        print(f"Total Training Time: {toc - tic:0.4f}s")
     def GetModel(self):
         return self.model
