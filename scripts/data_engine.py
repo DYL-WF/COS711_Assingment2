@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 
 
 np.set_printoptions(precision=3, suppress=True)
-logging.basicConfig( filename='./logs/debug.log', level=logging.DEBUG)
+logging.basicConfig(format='%(message)s', filename='./logs/debug.log', level=logging.INFO)
 logging.FileHandler(filename='./logs/debug.log',mode='w')
 class data_engine():
     def __init__(self, file_path, mode="train"):
@@ -23,15 +23,13 @@ class data_engine():
                 file_path,
                 header=0,
                 sep=",",
-                index_col=0,
             )
         self.mode = mode
+        if(mode=="train"):
+            # Normalizing the extent attribute
+            self.data['extent'] = self.data['extent'].div(100)
         
-        # Normalizing the extent attribute
-        self.data['extent'] = self.data['extent'].div(100)
         
-        logging.debug("Raw Data")
-        logging.debug(self.data)
     
     def get_image_data(self,file_name):
         img = torchvision.io.read_image("content/"+self.mode+"/"+file_name)
@@ -52,20 +50,22 @@ class data_engine():
 
     def get_input(self, index: int):
 
-        logging.info("# retrieving data for row: "+str(index))
-        if((index < self.data.size) & (index >= 0)):
+        if((index < len(self.data)) & (index >= 0)):
+            img_data = self.get_image_data(self.data.iloc[index]["filename"])       
+            meta_data = self.data.iloc[index].to_list()[3:]
+            target = self.data.iloc[index].to_list()[2]
+            return img_data, torch.Tensor(np.array(meta_data)), target 
+        else:
+            logging.error("Index out of bounds")
+            raise Exception("Index out of bounds")
+        
+    def get_test_input(self, index: int):
+
+        if((index < len(self.data)) & (index >= 0)):
             img_data = self.get_image_data(self.data.iloc[index]["filename"])       
             meta_data = self.data.iloc[index].to_list()[2:]
-            target = self.data.iloc[index].to_list()[1]
-
-            # logging.debug("Image data: ")
-            # logging.debug(img_data)
-            # logging.debug("Meta data: ")
-            # logging.debug(meta_data)
-
-            # logging.debug("Target: "+ str(target))
-
-            return img_data, torch.Tensor(np.array(meta_data)), target 
+            id = self.data.iloc[index]["ID"]
+            return img_data, torch.Tensor(np.array(meta_data)), id
         else:
             logging.error("Index out of bounds")
             raise Exception("Index out of bounds")
@@ -89,5 +89,7 @@ class data_engine():
         self.data = pd.concat([self.data, OH_damage],axis=1)
         self.data = pd.concat([self.data, OH_season],axis=1)
 
-        logging.debug(self.data)
+
+    def get_count(self):
+        return len(self.data)
 

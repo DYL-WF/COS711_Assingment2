@@ -29,6 +29,9 @@ class CNN_Net(nn.Module):
         self.mlayer2 = nn.Linear(64, 16)
         self.mlayer3 = nn.Linear(16, 1)
 
+
+        
+
     def forward(self, x,y):
 	    # ''' the forward propagation algorithm '''
         x = self.pool(F.relu(self.conv1(x)))
@@ -46,5 +49,3 @@ class CNN_Net(nn.Module):
 
 
 
-# net = Net()
-# print(net)
