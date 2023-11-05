@@ -19,9 +19,9 @@ class Trainer():
         device = torch.device(proc_mode)
         self.model = self.model.to(device)
 
-        self.lossFunction = torch.nn.MSELoss()  
-        self.optimizer = torch.optim.SGD(self.model.parameters(), lr=0.1, momentum=0.1)
-        self.scheduler = lr_scheduler.ExponentialLR(self.optimizer, gamma=0.5)
+        self.lossFunction = torch.nn.CrossEntropyLoss()
+        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=0.1)
+        self.scheduler = lr_scheduler.ExponentialLR(self.optimizer, gamma=0.9)
         self.data_engine = data_engine.data_engine("meta/Train.csv")
         self.data_engine.one_hot_encode()
         logging.info(self.model)
@@ -35,7 +35,7 @@ class Trainer():
         lossesEpoch = []
         accuracyEpoch = []
         numCases = self.data_engine.get_count()
-
+        numCases = 1000
 
 
         trainingCount = round( numCases*trainingSplit )
@@ -58,7 +58,7 @@ class Trainer():
                 else: 
                     y = torch.Tensor([[target]])
 
-                loss = torch.sqrt(self.lossFunction(x,y))
+                loss = self.lossFunction(x,y)
 
                 self.optimizer.zero_grad()
                 loss.backward()
@@ -67,7 +67,7 @@ class Trainer():
                 lossesTotal.append(loss.item())
                 epochAverageLoss += loss.item()
 
-                logging.info(f"Epoch: {epoch+1} Training Case: {i+1}\n   Target: {round(y.item()*100)}, Prediction: {round(x.item()*100)}, Loss: {str(round(loss.item(),6))} \n")
+                logging.info(f"Epoch: {epoch+1} Training Case: {i+1}\n   Target: {round(y.item()*100)}, Prediction: {round(x.item()*100,0)}, Loss: {str(round(loss.item(),10))} \n")
 
             # Average Loss
             lossesEpoch.append(epochAverageLoss/trainingCount)
