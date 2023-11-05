@@ -19,7 +19,7 @@ class Trainer():
         device = torch.device(proc_mode)
         self.model = self.model.to(device)
 
-        self.lossFunction = torch.nn.CrossEntropyLoss()
+        self.lossFunction = torch.nn.MSELoss()
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=0.1)
         self.scheduler = lr_scheduler.ExponentialLR(self.optimizer, gamma=0.9)
         self.data_engine = data_engine.data_engine("meta/Train.csv")
@@ -58,7 +58,7 @@ class Trainer():
                 else: 
                     y = torch.Tensor([[target]])
 
-                loss = self.lossFunction(x,y)
+                loss = torch.sqrt( self.lossFunction(x,y) )
 
                 self.optimizer.zero_grad()
                 loss.backward()

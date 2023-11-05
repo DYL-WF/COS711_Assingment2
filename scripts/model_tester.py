@@ -14,10 +14,11 @@ class Tester():
         self.data_engine.one_hot_encode()
        
     def SaveModel(self):
-        torch.save(self.model.state_dict(), "model/submission")
+        torch.save(self.model, "model/submission")
 
-    def LoadModel(self):
-        self.model = torch.load("model/submission")
+    def LoadModel(self,path="model/submission"):
+        self.model = torch.load(path) 
+        print(self.model)
         
     def Test(self):
         logging.info("#==================+-------------------------- TESTING MODEL --------------------------------+==================#")
@@ -33,4 +34,19 @@ class Tester():
             logging.info(f"Testing Case {i+1}\n   Prediction: {x} \n")
 
         f.close()
+
+    def TestIndex(self, index):
+        img_data, meta_data, id = self.data_engine.get_test_input(index,self.proc_mode)
+        x = round(self.model.forward(img_data,meta_data).item()*100)
+
+        print(f"Testing Case {index+1}\n   Prediction: {x} \n")
             
+    def TestCLI(self):
+        logging.info("#==================+-------------------------- TESTING MODEL --------------------------------+==================#")
+
+        numCases = self.data_engine.get_count()
+
+        for i in range(numCases):
+            img_data, meta_data, id = self.data_engine.get_test_input(i,self.proc_mode)
+            x = round(self.model.forward(img_data,meta_data).item()*100)
+            print(f"Testing Case {i+1}\n   Prediction: {x} \n")
