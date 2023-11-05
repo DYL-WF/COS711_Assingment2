@@ -20,8 +20,8 @@ class Trainer():
         self.model = self.model.to(device)
 
         self.lossFunction = torch.nn.MSELoss()  
-        self.optimizer = torch.optim.SGD(self.model.parameters(), lr=0.01, momentum=0.9)
-        self.scheduler = lr_scheduler.ExponentialLR(self.optimizer, gamma=0.9)
+        self.optimizer = torch.optim.SGD(self.model.parameters(), lr=0.1, momentum=0.1)
+        self.scheduler = lr_scheduler.ExponentialLR(self.optimizer, gamma=0.5)
         self.data_engine = data_engine.data_engine("meta/Train.csv")
         self.data_engine.one_hot_encode()
         logging.info(self.model)
@@ -36,9 +36,12 @@ class Trainer():
         accuracyEpoch = []
         numCases = self.data_engine.get_count()
 
+
+
         trainingCount = round( numCases*trainingSplit )
         validationCount = round( numCases*(1-trainingSplit) )
         for epoch in range(numEpochs):
+            lr= self.optimizer.param_groups[0]['lr']
             epochAverageLoss = 0
             correct = 0
             epochtic = time.perf_counter()
@@ -64,7 +67,7 @@ class Trainer():
                 lossesTotal.append(loss.item())
                 epochAverageLoss += loss.item()
 
-                logging.info(f"Epoch: {epoch+1} Training Case: {i+1}\n   Target: {round(y.item()*100)}, Prediction: {round(x.item()*100)}, Loss: {str(loss.item())} \n")
+                logging.info(f"Epoch: {epoch+1} Training Case: {i+1}\n   Target: {round(y.item()*100)}, Prediction: {round(x.item()*100)}, Loss: {str(round(loss.item(),6))} \n")
 
             # Average Loss
             lossesEpoch.append(epochAverageLoss/trainingCount)
@@ -82,13 +85,13 @@ class Trainer():
 
                 logging.info(f"Epoch: {epoch+1} Validation Case: {i+1}\n   Target: {y}, Prediction: {x} \n")
 
-            accuracy = 100 * correct / validationCount 
+            accuracy = round(100 * correct / validationCount ,2)
             accuracyEpoch.append(accuracy)
             self.scheduler.step()
 
             epochtoc = time.perf_counter()
             epoch_delta = epochtoc - epochtic
-            logging.info(f"## Epoch: {epoch+1} \n   Time Taken: {epoch_delta:0.4f}, Accuracy: {accuracy}, Average Loss: {epochAverageLoss/trainingCount} \n")
+            logging.info(f"## Epoch: {epoch+1} \n   Time Taken: {epoch_delta:0.4f}, Accuracy: {accuracy}, Average Loss: {round(epochAverageLoss/trainingCount)} Learning Rate: {lr}\n")
 
             
 
