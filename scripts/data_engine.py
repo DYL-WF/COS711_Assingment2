@@ -23,6 +23,7 @@ class data_engine():
                 file_path,
                 header=0,
                 sep=",",
+                
             )
         self.mode = mode
         if(mode=="train"):
@@ -48,24 +49,30 @@ class data_engine():
         
         return img_normalized
 
-    def get_input(self, index: int):
+    def get_input(self, index: int, proc_mode="cuda"):
 
         if((index < len(self.data)) & (index >= 0)):
             img_data = self.get_image_data(self.data.iloc[index]["filename"])       
             meta_data = self.data.iloc[index].to_list()[3:]
             target = self.data.iloc[index].to_list()[2]
-            return img_data, torch.Tensor(np.array(meta_data)), target 
+            if(proc_mode=="cuda"):
+                return img_data.cuda(), torch.Tensor(np.array(meta_data)).cuda(), target
+            else:
+                return img_data, torch.Tensor(np.array(meta_data)), target
         else:
             logging.error("Index out of bounds")
             raise Exception("Index out of bounds")
         
-    def get_test_input(self, index: int):
+    def get_test_input(self, index: int, proc_mode="cuda"):
 
         if((index < len(self.data)) & (index >= 0)):
             img_data = self.get_image_data(self.data.iloc[index]["filename"])       
             meta_data = self.data.iloc[index].to_list()[2:]
             id = self.data.iloc[index]["ID"]
-            return img_data, torch.Tensor(np.array(meta_data)), id
+            if(proc_mode=="cuda"):
+                return img_data.cuda(), torch.Tensor(np.array(meta_data)).cuda(), id
+            else:
+                return img_data, torch.Tensor(np.array(meta_data)), id
         else:
             logging.error("Index out of bounds")
             raise Exception("Index out of bounds")

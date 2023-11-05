@@ -7,8 +7,9 @@ import model as CNNModel
 logging.basicConfig(format='%(message)s', filename='./logs/debug.log', level=logging.INFO)
 
 class Tester():
-    def __init__(self, model):
+    def __init__(self, model,proc_mode="cuda"):
         self.model = model  
+        self.proc_mode = proc_mode
         self.data_engine = data_engine.data_engine("meta/Test.csv","test")
         self.data_engine.one_hot_encode()
        
@@ -22,11 +23,10 @@ class Tester():
         logging.info("#==================+-------------------------- TESTING MODEL --------------------------------+==================#")
 
         numCases = self.data_engine.get_count()
-        # numCases = 100
         f = open("submission", "w")
 
         for i in range(numCases):
-            img_data, meta_data, id = self.data_engine.get_test_input(i)
+            img_data, meta_data, id = self.data_engine.get_test_input(i,self.proc_mode)
             x = round(self.model.forward(img_data,meta_data).item()*100)
 
             f.write(f"{id} {x}\n")

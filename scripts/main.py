@@ -9,10 +9,13 @@ logging.FileHandler(filename='./logs/debug.log',mode='w')
 
 import model_trainer
 import model_tester
-trainer = model_trainer.Trainer()
-trainer.Train(numEpochs=10)
+trainerGPU = model_trainer.Trainer(proc_mode="cuda")
+trainerGPU.Train(numEpochs=5)
 
-tester = model_tester.Tester(trainer.GetModel())
+# trainerCPU = model_trainer.Trainer(proc_mode="cpu")
+# trainerCPU.Train(numEpochs=10)
+
+tester = model_tester.Tester(trainerGPU.GetModel(),proc_mode="cuda")
 tester.Test()
 tester.SaveModel()
 
