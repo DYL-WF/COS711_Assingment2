@@ -10,7 +10,7 @@ logging.FileHandler(filename='./logs/debug.log',mode='w')
 import model_trainer
 import model_tester
 trainerGPU = model_trainer.Trainer(proc_mode="cuda")
-trainerGPU.Train(numEpochs=10)
+trainerGPU.Train(numEpochs=20)
 
 tester = model_tester.Tester(trainerGPU.GetModel(),proc_mode="cuda")
 tester.Test()
